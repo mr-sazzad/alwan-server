@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "logs\\.48e65e527cd8c79a0802ffe75a6ac89b01ea38ab-audit.json",
+    "files": [
+        {
+            "date": 1716170533112,
+            "name": "logs\\alwan-2024-05-20.log",
+            "hash": "0165851b69c15236cdbfabac088d870097663f3565f85b40c5350d57ce333304"
+        }
+    ],
+    "hashType": "sha256"
+}

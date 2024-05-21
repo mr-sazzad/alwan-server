@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  googleId           String?              @unique
+  username           String
+  email              String               @unique
+  password           String?
+  role               Role                 @default(user)
+  shippingDistrict   String?
+  shippingAddress    String?
+  phone              String?
+  altPhone           String?
+  image              String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  Order              Order[]
+  Feedback           Feedback[]
+  comment            Comment[]
+  PasswordResetToken PasswordResetToken[]
+}
+
+model Product {
+  id                      String      @id @default(uuid())
+  name                    String
+  prices                  Int[]
+  sizes                   String[]
+  desc                    String[]
+  features                String[]
+  images                  String[]
+  mSizeStock              Int
+  lSizeStock              Int
+  xlSizeStock             Int
+  xxlSizeStock            Int
+  isFreeDeliveryAvailable Boolean     @default(false)
+  status                  Status      @default(in_stock)
+  isCouponApplicable      Boolean     @default(false)
+  OrderItem               OrderItem[]
+  Comment                 Comment[]
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+}
+
+model Coupon {
+  id                 String   @id @default(uuid())
+  code               String   @unique
+  discountPercentage Float    @default(0.0)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  Order              Order[]
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email           String
+  shippingAddress String
+  shippingCity    String
+  totalCost       Int
+  phone           String
+  altPhone        String?
+  items           OrderItem[]
+  returns         Return[]
+  couponId        String?
+  coupon          Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  orderNote       String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size      String?
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orderId, productId, size])
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Return {
+  id           String   @id @default(uuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  returnReason String
+  returnNote   String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Carousel {
+  id        String   @id @default(uuid())
+  images    String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// enums for models
+enum Role {
+  user
+  admin
+}
+
+enum Status {
+  in_stock
+  stock_out
+}
+
+enum PaymentStatus {
+  paid
+  unpaid
+}
+
+enum Color {
+  black
+  white
+  skyBlue
+  gray
+  purple
+  lightGreen
+  multicolor
+}
